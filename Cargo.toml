@@ -1,0 +1,7 @@
+[package]
+name = "trivia-bot"
+version = "0.1.0"
+authors = ["taylor"]
+
+[dependencies]
+serenity = "0.5"
