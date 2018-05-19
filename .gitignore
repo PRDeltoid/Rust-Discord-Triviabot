@@ -1,5 +1,6 @@
 *.swp
 *.exe
 *.pdb
+*.lock
 /target
 **/*.rs.bk

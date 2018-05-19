@@ -5,3 +5,4 @@ authors = ["taylor"]
 
 [dependencies]
 serenity = "0.5"
+typemap = "0.3.3"
