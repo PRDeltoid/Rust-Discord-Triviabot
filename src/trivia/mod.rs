@@ -2,13 +2,13 @@ use serenity::model::channel::Message;
 use serenity::model::id::ChannelId;
 use typemap::Key;
 
+mod question;
+
 pub struct TriviaManager {
     pub running: bool,
-    current_question: String,
-    current_answer: String,
+    current_question: Option<question::Question>,
     channel: Option<ChannelId>,
     question_number: u32,
-    number_of_questions: u32,
 }
 
 
@@ -23,11 +23,9 @@ impl TriviaManager {
     pub fn new() -> TriviaManager {
         TriviaManager {
             running: false,
-            current_question: "What is 2 times 2?".to_string(),
-            current_answer: "4".to_string(),
+            current_question: None,
             channel: None,
             question_number: 0,
-            number_of_questions: 0,
         }
     }
 
@@ -37,11 +35,13 @@ impl TriviaManager {
     pub fn start(&mut self, message: &Message) {
         match self.running {
             false => {
+                //Configure the trivia manager
                 self.running = true;
                 self.channel = Some(message.channel_id);
-                self.number_of_questions = 10;
                 self.question_number = 1;
+                self.current_question = Some(question::Question::new("What is 2 times 2?".to_string(), "4".to_string()));
 
+                //Tell the user we've started and ask a question
                 self.say("Trivia Running");
                 self.ask_question();
             },
@@ -84,13 +84,13 @@ impl TriviaManager {
 
     /// Sends a message to the active trivia channel with the current question
     fn ask_question(&self) {
-        let question = format!("Question {}: {}", self.question_number, self.current_question);
+        let question = format!("Question {}: {}", self.question_number, self.current_question.as_ref().unwrap().prompt);
         self.say(&question);
     }
 
     /// Checks if a given string matches the current question's answer
     fn check_answer(&self, message: String) -> bool {
-        if message == self.current_answer {
+        if message == self.current_question.as_ref().unwrap().answer {
             true
         } else {
             false 
