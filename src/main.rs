@@ -10,11 +10,13 @@ use std::env;
 
 struct Handler;
 
+//Event Handler for Discord Events
 impl EventHandler for Handler {
+    //Function to run whenever a message is received
     fn message(&self, ctx: Context, msg: Message) {
         let data = ctx.data.lock();
         let trivia_manager = data.get::<trivia::TriviaManager>().unwrap();
-        trivia_manager.on_message(&msg);
+        trivia_manager.on_message(msg);
     }
 }
 
@@ -30,11 +32,14 @@ fn main() {
     let mut client = Client::new(discord_token, Handler)
         .expect("Error creating client");
 
+    //Store the trivia manager in our context's data map.
     {
-        //Get context data for inserting trivia manager struct
         let mut data = client.data.lock();
         data.insert::<trivia::TriviaManager>(trivia_manager);
     }
+
+    //Construct a client handler, which routes trivia commands to logic
+    //This does not handle the answer input, only commands given with the prefix character
     client.with_framework(StandardFramework::new()
         .configure(|c| c.prefix(".")) // set the bot's prefix to "."
         .command("trivia", |c| c

@@ -10,9 +10,9 @@ command!(trivia_handler(context, message, args) {
 
     //Do an action based on the command
     match command.as_ref() {
-        "start" => { trivia_manager.start(&message); },
-        "stop"  => { trivia_manager.stop(&message); },
-        _       => { trivia_manager.unrecognized_command(&message); },
+        "start" => { trivia_manager.start(message); },
+        "stop"  => { trivia_manager.stop(message); },
+        _       => { trivia_manager.unrecognized_command(message); },
     };
 });
 
