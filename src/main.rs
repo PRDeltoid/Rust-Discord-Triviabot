@@ -1,6 +1,10 @@
 #[macro_use] 
 extern crate serenity;
 extern crate typemap;
+extern crate reqwest;
+#[macro_use]
+extern crate serde_derive;
+extern crate url;
 
 use serenity::client::{ Client, Context};
 use serenity::prelude::EventHandler;
@@ -22,8 +26,12 @@ impl EventHandler for Handler {
 
 mod commands;
 mod trivia;
+mod db;
 
 fn main() {
+
+    let _ = db::test();
+
     // Login with a bot token from the environment
     let discord_token = &env::var("DISCORD_TOKEN").expect("token");
     let trivia_manager = trivia::TriviaManager::new();

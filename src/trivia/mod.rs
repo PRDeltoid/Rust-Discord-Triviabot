@@ -2,13 +2,14 @@ use serenity::model::channel::Message;
 use serenity::model::id::ChannelId;
 use typemap::Key;
 
-mod question;
+pub mod question;
+pub mod questionset;
+use super::trivia::questionset::QuestionSet;
 
 pub struct TriviaManager {
     pub running: bool,
-    current_question: Option<question::Question>,
+    question_set: QuestionSet,
     channel: Option<ChannelId>,
-    question_number: u32,
 }
 
 
@@ -23,9 +24,8 @@ impl TriviaManager {
     pub fn new() -> TriviaManager {
         TriviaManager {
             running: false,
-            current_question: None,
+            question_set: QuestionSet::new(0),
             channel: None,
-            question_number: 0,
         }
     }
 
@@ -38,8 +38,8 @@ impl TriviaManager {
                 //Configure the trivia manager
                 self.running = true;
                 self.channel = Some(message.channel_id);
-                self.question_number = 1;
-                self.current_question = Some(question::Question::new("What is 2 times 2?".to_string(), "4".to_string()));
+
+                self.question_set.generate_questions();
 
                 //Tell the user we've started and ask a question
                 self.say("Trivia Running");
@@ -83,18 +83,21 @@ impl TriviaManager {
     }
 
     /// Sends a message to the active trivia channel with the current question
-    fn ask_question(&self) {
-        let question = format!("Question {}: {}", self.question_number, self.current_question.as_ref().unwrap().prompt);
+    fn ask_question(&mut self) {
+        let question = self.question_set.get_current_question();
+        let question = format!("Question: {}", question.prompt);
         self.say(&question);
     }
 
     /// Checks if a given string matches the current question's answer
-    fn check_answer(&self, message: String) -> bool {
-        if message == self.current_question.as_ref().unwrap().answer {
+    fn check_answer(&self, _message: String) -> bool {
+        /*TODO let question = self.question_set.get_current_question();
+        if message == question.answer {
             true
         } else {
             false 
-        }
+        }*/
+        true
     }
 
     /// Sends a message to the currently set channel
