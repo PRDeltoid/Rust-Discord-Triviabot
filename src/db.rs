@@ -2,10 +2,14 @@ extern crate serde_json;
 extern crate reqwest;
 extern crate url;
 
-use trivia::questionset::QuestionSet;
+use question::Question;
+use questionset::QuestionSet;
+use optionset::OptionSet;
+use url::Url;
 
 #[derive(Serialize, Deserialize)]
 struct EntrySet {
+    response_code: i32,
     results: Vec<Entry>,
 }
 
@@ -18,38 +22,50 @@ struct Entry {
     incorrect_answers: Vec<String>,
 }
 
-pub fn get_question_set(num_questions: u32) -> QuestionSet {
+///Produces a QuestionSet based on the given OptionSet.
+pub fn get_question_set(options: OptionSet) -> QuestionSet {
+    let number_of_questions = options.number_of_questions.clone();
 
-    QuestionSet::new(5)
+    let url = compose_url(options);
+    let json =  get_json(url);
+
+    //println!("JSON: {}\n", json);
+
+    let v: EntrySet = serde_json::from_str(&json).unwrap();
+
+    //println!("Serde: {}", v.results[0].category);
+
+    let mut questions: Vec<Question> = Vec::new();
+
+    for result in v.results.iter() {
+        let question = Question {
+            prompt: result.question.clone(),
+            answer: result.correct_answer.clone(),
+            category: result.category.clone(),
+            difficulty: result.difficulty.clone(),
+            answered: false,
+        };
+        questions.push(question);
+    }
+
+    QuestionSet::new(questions, number_of_questions)
 
 }
 
-pub fn test() -> Result<String, serde_json::Error> {
-    let text = get_json();
-
-    // Parse the string of json into QuestionSet value
-    let v: EntrySet = serde_json::from_str(&text)?;
-
-    //for result in v.results.iter() {
-    //    print!("Cat: {}", result.category);
-    //}
-
-    //println!("Results: {}", &v);
-    Result::Ok(text)
-}
-
-///Requests JSON from the given server and returns it as a String
-fn get_json() -> String {
-    let url = compose_trivia_url();
-    let text = reqwest::get(url).unwrap()
+///Requests JSON from the given URL and returns it as a String
+fn get_json(url: Url) -> String {
+    let json = reqwest::get(url).unwrap()
         .text().unwrap();
-    text
+    json 
 }
 
 ///Composes a trivia request URL based on parameters.
-fn compose_trivia_url() -> url::Url {
-    let url = url::Url::parse_with_params("https://opentdb.com/api.php",
-                                      &[("amount","1")])
+fn compose_url(options: OptionSet) -> Url {
+
+    let num = options.number_of_questions.to_string();
+    let url = Url::parse_with_params("https://opentdb.com/api.php",
+                                      &[("amount",num), 
+                                        ("type", "multiple".to_string())])
                                     .unwrap();
     url
 }

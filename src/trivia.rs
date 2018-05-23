@@ -2,9 +2,10 @@ use serenity::model::channel::Message;
 use serenity::model::id::ChannelId;
 use typemap::Key;
 
-pub mod question;
-pub mod questionset;
-use super::trivia::questionset::QuestionSet;
+use optionset::OptionSet;
+use questionset::QuestionSet;
+use question::Question;
+use db;
 
 pub struct TriviaManager {
     pub running: bool,
@@ -22,9 +23,10 @@ impl TriviaManager {
 
     /// Generates a new trivia manager. Channel and running are unset by default.
     pub fn new() -> TriviaManager {
+        let questions: Vec<Question> = Vec::new();
         TriviaManager {
             running: false,
-            question_set: QuestionSet::new(0),
+            question_set: QuestionSet::new(questions, 1),
             channel: None,
         }
     }
@@ -39,7 +41,9 @@ impl TriviaManager {
                 self.running = true;
                 self.channel = Some(message.channel_id);
 
-                self.question_set.generate_questions();
+                let optionset = OptionSet::new();
+
+                self.question_set = db::get_question_set(optionset);
 
                 //Tell the user we've started and ask a question
                 self.say("Trivia Running");
@@ -73,11 +77,13 @@ impl TriviaManager {
     /// Method which runs whenever a new message is recieved.
     ///
     /// If the triviabot is running, the text is checked to see if it is an answer
-    pub fn on_message(&self, message: Message) {
+    pub fn on_message(&mut self, message: Message) {
         if self.running {
             let correct = self.check_answer(message.content);
             if correct {
                 let _ = self.channel.unwrap().say("Correct");
+                self.question_set.next_question();
+                self.ask_question();
             }
         }
     }
@@ -90,14 +96,14 @@ impl TriviaManager {
     }
 
     /// Checks if a given string matches the current question's answer
-    fn check_answer(&self, _message: String) -> bool {
-        /*TODO let question = self.question_set.get_current_question();
-        if message == question.answer {
+    fn check_answer(&mut self, message: String) -> bool {
+
+        if message == self.question_set.get_current_question().answer {
+            self.question_set.next_question();
             true
         } else {
             false 
-        }*/
-        true
+        }
     }
 
     /// Sends a message to the currently set channel

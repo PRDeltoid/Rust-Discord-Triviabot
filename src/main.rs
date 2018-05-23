@@ -1,3 +1,4 @@
+//External Crates
 #[macro_use] 
 extern crate serenity;
 extern crate typemap;
@@ -6,11 +7,21 @@ extern crate reqwest;
 extern crate serde_derive;
 extern crate url;
 
+//Imports
 use serenity::client::{ Client, Context};
 use serenity::prelude::EventHandler;
 use serenity::framework::standard::StandardFramework;
 use serenity::model::channel::Message;
 use std::env;
+
+//Modules
+mod commands;
+mod trivia;
+mod db;
+mod question;
+mod questionset;
+mod optionset;
+
 
 struct Handler;
 
@@ -18,19 +29,14 @@ struct Handler;
 impl EventHandler for Handler {
     //Function to run whenever a message is received
     fn message(&self, ctx: Context, msg: Message) {
-        let data = ctx.data.lock();
-        let trivia_manager = data.get::<trivia::TriviaManager>().unwrap();
+        let mut data = ctx.data.lock();
+        let mut trivia_manager = data.get_mut::<trivia::TriviaManager>().unwrap();
         trivia_manager.on_message(msg);
     }
 }
 
-mod commands;
-mod trivia;
-mod db;
 
 fn main() {
-
-    let _ = db::test();
 
     // Login with a bot token from the environment
     let discord_token = &env::var("DISCORD_TOKEN").expect("token");
