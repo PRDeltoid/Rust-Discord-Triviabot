@@ -31,13 +31,13 @@ pub fn get_question_set(options: OptionSet) -> QuestionSet {
 
     //println!("JSON: {}\n", json);
 
-    let v: EntrySet = serde_json::from_str(&json).unwrap();
+    let res: EntrySet = serde_json::from_str(&json).unwrap();
 
     //println!("Serde: {}", v.results[0].category);
 
     let mut questions: Vec<Question> = Vec::new();
 
-    for result in v.results.iter() {
+    for result in res.results.iter() {
         let question = Question {
             prompt: result.question.clone(),
             answer: result.correct_answer.clone(),
@@ -64,8 +64,12 @@ fn compose_url(options: OptionSet) -> Url {
 
     let num = options.number_of_questions.to_string();
     let url = Url::parse_with_params("https://opentdb.com/api.php",
-                                      &[("amount",num), 
-                                        ("type", "multiple".to_string())])
+                                      &[("amount",      num), 
+                                        ("type",        "multiple".to_string()),
+                                        ("difficulty",  options.difficulty),
+                                        ("category",    options.category)])
                                     .unwrap();
+
+    //println!("URL: {}", url);
     url
 }
