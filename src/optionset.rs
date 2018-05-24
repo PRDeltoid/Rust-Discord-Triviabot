@@ -5,9 +5,10 @@ pub struct OptionSet {
 }
 
 impl OptionSet {
+    #[allow(dead_code)]
     pub fn new() -> OptionSet {
         OptionSet {
-            number_of_questions: 10,
+            number_of_questions: 2,
             difficulty: "easy".to_string(),
             category: "".to_string(),
         }

@@ -24,19 +24,22 @@ struct Entry {
 
 ///Produces a QuestionSet based on the given OptionSet.
 pub fn get_question_set(options: OptionSet) -> QuestionSet {
+    //Grab the number of questions before we consume the optionset
     let number_of_questions = options.number_of_questions.clone();
 
+    //Pull our trivia data as JSON
     let url = compose_url(options);
     let json =  get_json(url);
-
     //println!("JSON: {}\n", json);
 
+    //Create our raw dataset from the JSON
     let res: EntrySet = serde_json::from_str(&json).unwrap();
-
     //println!("Serde: {}", v.results[0].category);
 
+    //Create an empty questionset
     let mut questions: Vec<Question> = Vec::new();
 
+    //For each result in our raw dataset, create a question and add it to 'questions'
     for result in res.results.iter() {
         let question = Question {
             prompt: result.question.clone(),
@@ -48,6 +51,7 @@ pub fn get_question_set(options: OptionSet) -> QuestionSet {
         questions.push(question);
     }
 
+    //Return the new questionset
     QuestionSet::new(questions, number_of_questions)
 
 }
@@ -70,6 +74,6 @@ fn compose_url(options: OptionSet) -> Url {
                                         ("category",    options.category)])
                                     .unwrap();
 
-    //println!("URL: {}", url);
+    println!("URL: {}", url);
     url
 }

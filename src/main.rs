@@ -30,7 +30,7 @@ impl EventHandler for Handler {
     //Function to run whenever a message is received
     fn message(&self, ctx: Context, msg: Message) {
         let mut data = ctx.data.lock();
-        let mut trivia_manager = data.get_mut::<trivia::TriviaManager>().unwrap();
+        let trivia_manager = data.get_mut::<trivia::TriviaManager>().unwrap();
         trivia_manager.on_message(msg);
     }
 }

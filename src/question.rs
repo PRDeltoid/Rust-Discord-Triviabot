@@ -10,6 +10,7 @@ pub struct Question {
 
 
 impl Question {
+    #[allow(dead_code)]
     pub fn new(prompt: String, answer: String, category: String, difficulty: String) -> Question {
         Question {
             prompt: prompt,

@@ -34,14 +34,11 @@ impl TriviaManager {
     /// Starts the trivia bot
     ///
     /// This function sets the `channel` member, which is used for sending messages during a game 
-    pub fn start(&mut self, message: &Message) {
+    pub fn start(&mut self, optionset: OptionSet) {
         match self.running {
             false => {
                 //Configure the trivia manager
                 self.running = true;
-                self.channel = Some(message.channel_id);
-
-                let optionset = OptionSet::new();
 
                 self.question_set = db::get_question_set(optionset);
 
@@ -56,7 +53,7 @@ impl TriviaManager {
     }
 
     /// Stops the trivia bot
-    pub fn stop(&mut self, message: &Message) {
+    pub fn stop(&mut self) {
         let text = match self.running {
             true => {
                 self.running = false;
@@ -66,7 +63,7 @@ impl TriviaManager {
                 String::from("Trivia is not running")
             },
         };
-        let _ = message.channel_id.say(text);
+        self.say(text.as_str());
     }
     
     /// Handler for an unrecognized trivia command
@@ -88,21 +85,48 @@ impl TriviaManager {
         }
     }
 
+    pub fn set_channel(&mut self, message: &Message) {
+        self.channel = Some(message.channel_id);
+    }
+
+
     /// Sends a message to the active trivia channel with the current question
+    /// When no more questions are available, this method calls the stop() method
     fn ask_question(&mut self) {
-        let question = self.question_set.get_current_question();
-        let question = format!("Question: {}", question.prompt);
-        self.say(&question);
+        //If question is false, there was no question to ask
+        let question = match self.question_set.get_current_question() {
+            Some(q) => {
+                let question = format!("Question: {}", q.prompt);
+                self.say(&question);
+                println!("Answer: {}", q.answer);
+                true
+            },
+            None => {
+                self.say("Out of questions");
+                false
+            }
+        };
+
+        //Stop if we don't have any more questions to ask
+        if question == false {
+            self.stop();
+        }
+
     }
 
     /// Checks if a given string matches the current question's answer
     fn check_answer(&mut self, message: String) -> bool {
+        let question = self.question_set.get_current_question();
 
-        if message == self.question_set.get_current_question().answer {
-            self.question_set.next_question();
-            true
-        } else {
-            false 
+        match question {
+            Some(q) => {
+                if message == q.answer {
+                    true
+                } else {
+                    false 
+                }
+            },
+            None => false
         }
     }
 
