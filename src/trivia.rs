@@ -1,3 +1,4 @@
+use htmlescape::{ decode_html };
 use serenity::model::channel::Message;
 use serenity::model::id::ChannelId;
 use typemap::Key;
@@ -96,7 +97,11 @@ impl TriviaManager {
         //If question is false, there was no question to ask
         let question = match self.question_set.get_current_question() {
             Some(q) => {
-                let question = format!("Question: {}", q.prompt);
+                let decoded = match decode_html(&q.prompt) {
+                    Err(reason) => panic!("Error {:?} at character {}", reason.kind, reason.position),
+                    Ok(s) => s
+                };
+                let question = format!("Question: {}", decoded);
                 self.say(&question);
                 println!("Answer: {}", q.answer);
                 true
@@ -120,7 +125,7 @@ impl TriviaManager {
 
         match question {
             Some(q) => {
-                if message == q.answer {
+                if message.to_lowercase() == q.answer.to_lowercase() {
                     true
                 } else {
                     false 

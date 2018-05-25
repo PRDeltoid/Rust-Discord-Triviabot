@@ -74,6 +74,6 @@ fn compose_url(options: OptionSet) -> Url {
                                         ("category",    options.category)])
                                     .unwrap();
 
-    println!("URL: {}", url);
+    //println!("URL: {}", url);
     url
 }

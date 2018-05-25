@@ -5,6 +5,7 @@ extern crate typemap;
 extern crate reqwest;
 #[macro_use]
 extern crate serde_derive;
+extern crate htmlescape; 
 extern crate url;
 
 //Imports
