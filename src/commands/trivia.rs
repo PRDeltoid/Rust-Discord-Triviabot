@@ -16,8 +16,8 @@ command!(trivia_handler(context, message, args) {
             let number_of_questions;
             let difficulty;
 
-            //Have to check if there are zero extra args or Serenity panics
-            if args.len() == 0 {
+            //Have to check if there are zero extra args or Serenity panics on find()
+            if args.is_empty() {
                 number_of_questions = 10;
                 difficulty = String::from("medium");
             } else {
@@ -44,6 +44,9 @@ command!(trivia_handler(context, message, args) {
         "stop"  => { 
             trivia_manager.set_channel(message);
             trivia_manager.stop(); 
+        },
+        "skip"  => {
+            trivia_manager.skip();
         },
         _       => { trivia_manager.unrecognized_command(message); },
     };

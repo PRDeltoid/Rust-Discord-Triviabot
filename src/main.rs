@@ -22,6 +22,7 @@ mod db;
 mod question;
 mod questionset;
 mod optionset;
+mod scores;
 
 
 struct Handler;

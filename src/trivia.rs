@@ -6,12 +6,14 @@ use typemap::Key;
 use optionset::OptionSet;
 use questionset::QuestionSet;
 use question::Question;
+use scores::Scores;
 use db;
 
 pub struct TriviaManager {
     pub running: bool,
     question_set: QuestionSet,
     channel: Option<ChannelId>,
+    scores: Scores,
 }
 
 
@@ -29,6 +31,7 @@ impl TriviaManager {
             running: false,
             question_set: QuestionSet::new(questions, 1),
             channel: None,
+            scores: Scores::new(),
         }
     }
 
@@ -58,6 +61,7 @@ impl TriviaManager {
         let text = match self.running {
             true => {
                 self.running = false;
+                self.print_scores();
                 String::from("Trivia Stopping")
             },
             false => {
@@ -65,6 +69,19 @@ impl TriviaManager {
             },
         };
         self.say(text.as_str());
+    }
+
+    pub fn skip(&mut self) {
+        match self.running {
+            true => {
+                self.say("Skipping question.");
+                self.question_set.next_question();
+                self.ask_question();
+            },
+            false => {
+                self.say("Can't skip because trivia is not running");
+            },
+        };
     }
     
     /// Handler for an unrecognized trivia command
@@ -80,6 +97,8 @@ impl TriviaManager {
             let correct = self.check_answer(message.content);
             if correct {
                 let _ = self.channel.unwrap().say("Correct");
+                self.scores.increase_score(message.author.id, 1);
+
                 self.question_set.next_question();
                 self.ask_question();
             }
@@ -88,6 +107,11 @@ impl TriviaManager {
 
     pub fn set_channel(&mut self, message: &Message) {
         self.channel = Some(message.channel_id);
+    }
+
+    fn print_scores(&self) {
+        self.say(self.scores.output_scores().as_str());
+
     }
 
 
