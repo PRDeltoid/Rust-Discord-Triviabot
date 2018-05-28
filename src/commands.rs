@@ -1,5 +1,5 @@
-use trivia;
 use optionset::OptionSet;
+use trivia;
 
 command!(trivia_start(context, message, args) {
     let optionset;
@@ -25,14 +25,14 @@ command!(trivia_start(context, message, args) {
         //println!("Num: {}, Diff: {}", number_of_questions, difficulty);
     }
 
-    optionset = OptionSet { 
+    optionset = OptionSet {
         number_of_questions: number_of_questions,
         difficulty: difficulty,
         category: String::from(""),
     };
 
     trivia_manager.set_channel(message);
-    trivia_manager.start(optionset); 
+    trivia_manager.start(optionset);
 });
 
 command!(trivia_stop(context, message, _args) {
@@ -40,7 +40,7 @@ command!(trivia_stop(context, message, _args) {
     let trivia_manager = data.get_mut::<trivia::TriviaManager>().expect("Error getting TriviaManager from bot data");
 
     trivia_manager.set_channel(message);
-    trivia_manager.stop(); 
+    trivia_manager.stop();
 });
 
 command!(trivia_skip(context, _message, _args) {
@@ -49,4 +49,3 @@ command!(trivia_skip(context, _message, _args) {
 
     trivia_manager.skip();
 });
-

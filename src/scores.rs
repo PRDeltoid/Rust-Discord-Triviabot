@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-use serenity::model::user::User;
 use serenity::model::id::UserId;
-
+use serenity::model::user::User;
+use std::collections::HashMap;
 
 pub struct Scores {
     score_list: HashMap<UserId, (String, u32)>,
@@ -16,7 +15,8 @@ impl Scores {
 
     pub fn increase_score(&mut self, user: User, points: u32) {
         let old_score = self.get_score(&user);
-        self.score_list.insert(user.id, (user.name, old_score + points));
+        self.score_list
+            .insert(user.id, (user.name, old_score + points));
     }
 
     pub fn get_score(&self, user: &User) -> u32 {

@@ -1,29 +1,28 @@
 //External Crates
-#[macro_use] 
+#[macro_use]
 extern crate serenity;
-extern crate typemap;
 extern crate reqwest;
+extern crate typemap;
 #[macro_use]
 extern crate serde_derive;
-extern crate htmlescape; 
+extern crate htmlescape;
 extern crate url;
 
 //Imports
-use serenity::client::{ Client, Context};
-use serenity::prelude::EventHandler;
+use serenity::client::{Client, Context};
 use serenity::framework::standard::StandardFramework;
 use serenity::model::channel::Message;
+use serenity::prelude::EventHandler;
 use std::env;
 
 //Modules
 mod commands;
-mod trivia;
 mod db;
+mod optionset;
 mod question;
 mod questionset;
-mod optionset;
 mod scores;
-
+mod trivia;
 
 struct Handler;
 
@@ -37,16 +36,13 @@ impl EventHandler for Handler {
     }
 }
 
-
 fn main() {
-
     // Login with a bot token from the environment
     let discord_token = &env::var("DISCORD_TOKEN").expect("token");
     let trivia_manager = trivia::TriviaManager::new();
 
     //Setup the bot client
-    let mut client = Client::new(discord_token, Handler)
-        .expect("Error creating client");
+    let mut client = Client::new(discord_token, Handler).expect("Error creating client");
 
     //Store the trivia manager in our context's data map.
     {
@@ -56,16 +52,16 @@ fn main() {
 
     //Construct a client handler, which routes trivia commands to logic
     //This does not handle the answer input, only commands given with the prefix character
-    client.with_framework(StandardFramework::new()
+    client.with_framework(
+        StandardFramework::new()
         .configure(|c| c.prefix(".")) // set the bot's prefix to "."
         .command("tstart", |c| c
             .cmd(commands::trivia_start))
         .command("tstop", |c| c
             .cmd(commands::trivia_stop))
         .command("tskip", |c| c
-            .cmd(commands::trivia_skip))
-        //.command("trivia", |c| c
-          //   .cmd(commands::trivia::trivia_handler))
+            .cmd(commands::trivia_skip)), //.command("trivia", |c| c
+                                          //   .cmd(commands::trivia::trivia_handler))
     );
 
     // start listening for events by starting a single shard

@@ -1,5 +1,5 @@
 use question::Question;
-use std::fmt::{Formatter, Display, Result};
+use std::fmt::{Display, Formatter, Result};
 
 pub struct QuestionSet {
     questions: Vec<Question>,
@@ -17,7 +17,7 @@ impl QuestionSet {
     }
 
     pub fn get_current_question(&self) -> Option<&Question> {
-       self.questions.get(self.current_question_number)
+        self.questions.get(self.current_question_number)
     }
 
     pub fn next_question(&mut self) {
