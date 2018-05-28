@@ -16,13 +16,13 @@ use serenity::prelude::EventHandler;
 use std::env;
 
 //Modules
-mod commands;
-mod db;
-mod optionset;
-mod question;
-mod questionset;
-mod scores;
-mod trivia;
+pub mod commands;
+pub mod db;
+pub mod optionset;
+pub mod question;
+pub mod questionset;
+pub mod scores;
+pub mod trivia;
 
 struct Handler;
 

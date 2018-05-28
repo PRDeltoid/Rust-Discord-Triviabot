@@ -8,6 +8,7 @@ use question::Question;
 use questionset::QuestionSet;
 use scores::Scores;
 
+/// The TriviaManager holds the current gamestate
 pub struct TriviaManager {
     pub running: bool,
     question_set: QuestionSet,
