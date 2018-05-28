@@ -1,6 +1,7 @@
 use optionset::OptionSet;
 use trivia;
 
+// This command is run when the start command is executed
 command!(trivia_start(context, message, args) {
     let optionset;
     let number_of_questions;
@@ -9,7 +10,7 @@ command!(trivia_start(context, message, args) {
     let mut data = context.data.lock();
     let trivia_manager = data.get_mut::<trivia::TriviaManager>().expect("Error getting TriviaManager from bot data");
 
-    //Have to check if there are zero extra args or Serenity panics on find()
+    // Have to check if there are zero extra args or Serenity panics on find()
     if args.is_empty() {
         number_of_questions = 10;
         difficulty = String::from("medium");
@@ -22,7 +23,7 @@ command!(trivia_start(context, message, args) {
             Ok(diff) => diff,
             Err(_e) => String::from("medium"), //default question difficulty
         };
-        //println!("Num: {}, Diff: {}", number_of_questions, difficulty);
+        // println!("Num: {}, Diff: {}", number_of_questions, difficulty);
     }
 
     optionset = OptionSet {
@@ -35,6 +36,7 @@ command!(trivia_start(context, message, args) {
     trivia_manager.start(optionset);
 });
 
+// This command is run when the stop command is executed
 command!(trivia_stop(context, message, _args) {
     let mut data = context.data.lock();
     let trivia_manager = data.get_mut::<trivia::TriviaManager>().expect("Error getting TriviaManager from bot data");
@@ -43,6 +45,7 @@ command!(trivia_stop(context, message, _args) {
     trivia_manager.stop();
 });
 
+// This command is run when the skip command is executed
 command!(trivia_skip(context, _message, _args) {
     let mut data = context.data.lock();
     let trivia_manager = data.get_mut::<trivia::TriviaManager>().expect("Error getting TriviaManager from bot data");

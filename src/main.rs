@@ -41,17 +41,17 @@ fn main() {
     let discord_token = &env::var("DISCORD_TOKEN").expect("token");
     let trivia_manager = trivia::TriviaManager::new();
 
-    //Setup the bot client
+    // Setup the bot client.
     let mut client = Client::new(discord_token, Handler).expect("Error creating client");
 
-    //Store the trivia manager in our context's data map.
+    // Store the trivia manager in our context's data map
     {
         let mut data = client.data.lock();
         data.insert::<trivia::TriviaManager>(trivia_manager);
     }
 
-    //Construct a client handler, which routes trivia commands to logic
-    //This does not handle the answer input, only commands given with the prefix character
+    // Construct a client handler, which routes trivia commands to logic.
+    // This does not handle the answer input, only commands given with the prefix character.
     client.with_framework(
         StandardFramework::new()
         .configure(|c| c.prefix(".")) // set the bot's prefix to "."
@@ -60,11 +60,10 @@ fn main() {
         .command("tstop", |c| c
             .cmd(commands::trivia_stop))
         .command("tskip", |c| c
-            .cmd(commands::trivia_skip)), //.command("trivia", |c| c
-                                          //   .cmd(commands::trivia::trivia_handler))
+            .cmd(commands::trivia_skip)),
     );
 
-    // start listening for events by starting a single shard
+    // Start listening for events by starting a single shard
     if let Err(why) = client.start() {
         println!("An error occurred while running the client: {:?}", why);
     }

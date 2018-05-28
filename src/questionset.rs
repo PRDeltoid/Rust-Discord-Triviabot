@@ -8,6 +8,7 @@ pub struct QuestionSet {
 }
 
 impl QuestionSet {
+    /// Generates a new QuestionSet item 
     pub fn new(questions: Vec<Question>, number_of_questions: u32) -> QuestionSet {
         QuestionSet {
             questions: questions,
@@ -16,10 +17,12 @@ impl QuestionSet {
         }
     }
 
+    /// Gets the current question as an Option
     pub fn get_current_question(&self) -> Option<&Question> {
         self.questions.get(self.current_question_number)
     }
 
+    /// Changes the current question to the next question in the QuestionSet
     pub fn next_question(&mut self) {
         self.current_question_number += 1;
     }

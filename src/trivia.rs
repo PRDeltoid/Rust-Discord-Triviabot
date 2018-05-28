@@ -68,6 +68,7 @@ impl TriviaManager {
         self.say(text);
     }
 
+    /// Skips the current question on the triviabot
     pub fn skip(&mut self) {
         match self.running {
             true => {
@@ -101,18 +102,20 @@ impl TriviaManager {
         }
     }
 
+    /// Sets the channel where the triviabot will send it's messages
     pub fn set_channel(&mut self, message: &Message) {
         self.channel = Some(message.channel_id);
     }
 
+    // Prints out the scorelist to the current channel
     fn print_scores(&self) {
         self.say(self.scores.output_scores());
     }
 
-    /// Sends a message to the active trivia channel with the current question
-    /// When no more questions are available, this method calls the stop() method
+    // Sends a message to the active trivia channel with the current question
+    // When no more questions are available, this method calls the stop() method
     fn ask_question(&mut self) {
-        //If question is false, there was no question to ask
+        // If question is false, there was no question to ask
         let question = match self.question_set.get_current_question() {
             Some(q) => {
                 let prompt = format!("Question: {}", q.prompt);
@@ -126,13 +129,13 @@ impl TriviaManager {
             }
         };
 
-        //Stop if we don't have any more questions to ask
+        // Stop if we don't have any more questions to ask
         if question == false {
             self.stop();
         }
     }
 
-    /// Checks if a given string matches the current question's answer
+    // Checks if a given string matches the current question's answer
     fn check_answer(&mut self, message: String) -> bool {
         let question = self.question_set.get_current_question();
 
@@ -148,9 +151,9 @@ impl TriviaManager {
         }
     }
 
-    /// Sends a message to the currently set channel
-    /// Accepts a raw Str object
-    /// If no channel exists, outputs an error message to the console
+    // Sends a message to the currently set channel
+    // Accepts a raw Str object
+    // If no channel exists, outputs an error message to the console
     fn say_raw(&self, message: &str) {
         match self.channel {
             Some(channel) => {
@@ -162,10 +165,10 @@ impl TriviaManager {
         }
     }
 
-    /// Sends a message to the currently set channel
-    /// Accepts a String object
-    /// If no channel exists, outputs an error message to the console
-    ///
+    // Sends a message to the currently set channel
+    // Accepts a String object
+    // If no channel exists, outputs an error message to the console
+    //
     fn say(&self, message: String) {
         match self.channel {
             Some(channel) => {

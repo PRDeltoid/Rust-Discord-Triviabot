@@ -1,5 +1,4 @@
 use std::fmt::{Display, Formatter, Result};
-use htmlescape::decode_html;
 
 pub struct Question {
     pub prompt: String,
@@ -13,8 +12,8 @@ impl Question {
     #[allow(dead_code)]
     pub fn new(prompt: String, answer: String, category: String, difficulty: String) -> Question {
         Question {
-            prompt: decode_html(&prompt).expect("Error decoding a question prompt"),
-            answer: decode_html(&answer).expect("Error decoding a question answer"),
+            prompt: prompt,
+            answer: answer,
             category: category,
             difficulty: difficulty,
             answered: false,

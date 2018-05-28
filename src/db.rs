@@ -23,24 +23,23 @@ struct Entry {
     incorrect_answers: Vec<String>,
 }
 
-///Produces a QuestionSet based on the given OptionSet.
+/// Produces a QuestionSet based on the given OptionSet.
 pub fn get_question_set(options: OptionSet) -> QuestionSet {
-    //Grab the number of questions before we consume the optionset
+    // Grab the number of questions before we consume the optionset
     let number_of_questions = options.number_of_questions.clone();
 
-    //Pull our trivia data as JSON
+    // Pull our trivia data as JSON
     let url = compose_url(options).expect("Error creating db URL");
     let json = get_json(url).expect("Error pulling JSON data");
-    //println!("JSON: {}\n", json);
+    // println!("JSON: {}\n", json);
 
-    //Create our raw dataset from the JSON
+    // Create our raw dataset from the JSON
     let res: EntrySet = serde_json::from_str(&json).expect("Error converting JSON to questionset");
-    //println!("Serde: {}", v.results[0].category);
 
-    //Create an empty questionset
+    // Create an empty questionset
     let mut questions: Vec<Question> = Vec::new();
 
-    //For each result in our raw dataset, create a question and add it to 'questions'
+    // For each result in our raw dataset, create a question and add it to 'questions'
     for result in res.results.iter() {
         let question = Question {
             prompt: decode_html(&result.question).expect("Error decoding a question prompt"),
@@ -52,17 +51,17 @@ pub fn get_question_set(options: OptionSet) -> QuestionSet {
         questions.push(question);
     }
 
-    //Return the new questionset
+    // Return the new questionset
     QuestionSet::new(questions, number_of_questions)
 }
 
-///Requests JSON from the given URL and returns it as a String
+// Requests JSON from the given URL and returns it as a String
 fn get_json(url: Url) -> Result<String, reqwest::Error> {
     let json = reqwest::get(url)?.text()?;
     Ok(json)
 }
 
-///Composes a trivia request URL based on parameters.
+// Composes a trivia request URL based on parameters.
 fn compose_url(options: OptionSet) -> Result<Url, url::ParseError> {
     let num = options.number_of_questions.to_string();
     let url = Url::parse_with_params(
@@ -75,6 +74,6 @@ fn compose_url(options: OptionSet) -> Result<Url, url::ParseError> {
         ],
     )?;
 
-    //println!("URL: {}", url);
+    // println!("URL: {}", url);
     Ok(url)
 }
