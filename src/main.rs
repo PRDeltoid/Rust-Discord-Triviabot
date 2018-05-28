@@ -58,8 +58,14 @@ fn main() {
     //This does not handle the answer input, only commands given with the prefix character
     client.with_framework(StandardFramework::new()
         .configure(|c| c.prefix(".")) // set the bot's prefix to "."
-        .command("trivia", |c| c
-             .cmd(commands::trivia::trivia_handler))
+        .command("tstart", |c| c
+            .cmd(commands::trivia_start))
+        .command("tstop", |c| c
+            .cmd(commands::trivia_stop))
+        .command("tskip", |c| c
+            .cmd(commands::trivia_skip))
+        //.command("trivia", |c| c
+          //   .cmd(commands::trivia::trivia_handler))
     );
 
     // start listening for events by starting a single shard

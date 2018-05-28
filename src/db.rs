@@ -28,12 +28,12 @@ pub fn get_question_set(options: OptionSet) -> QuestionSet {
     let number_of_questions = options.number_of_questions.clone();
 
     //Pull our trivia data as JSON
-    let url = compose_url(options);
-    let json =  get_json(url);
+    let url = compose_url(options).expect("Error creating db URL");
+    let json =  get_json(url).expect("Error pulling JSON data");
     //println!("JSON: {}\n", json);
 
     //Create our raw dataset from the JSON
-    let res: EntrySet = serde_json::from_str(&json).unwrap();
+    let res: EntrySet = serde_json::from_str(&json).expect("Error converting JSON to questionset");
     //println!("Serde: {}", v.results[0].category);
 
     //Create an empty questionset
@@ -57,23 +57,22 @@ pub fn get_question_set(options: OptionSet) -> QuestionSet {
 }
 
 ///Requests JSON from the given URL and returns it as a String
-fn get_json(url: Url) -> String {
-    let json = reqwest::get(url).unwrap()
-        .text().unwrap();
-    json 
+fn get_json(url: Url) -> Result<String, reqwest::Error> {
+    let json = reqwest::get(url)?
+        .text()?;
+    Ok(json)
 }
 
 ///Composes a trivia request URL based on parameters.
-fn compose_url(options: OptionSet) -> Url {
+fn compose_url(options: OptionSet) -> Result<Url, url::ParseError> {
 
     let num = options.number_of_questions.to_string();
     let url = Url::parse_with_params("https://opentdb.com/api.php",
                                       &[("amount",      num), 
                                         ("type",        "multiple".to_string()),
                                         ("difficulty",  options.difficulty),
-                                        ("category",    options.category)])
-                                    .unwrap();
+                                        ("category",    options.category)])?;
 
     //println!("URL: {}", url);
-    url
+    Ok(url)
 }

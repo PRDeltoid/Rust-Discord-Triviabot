@@ -47,11 +47,11 @@ impl TriviaManager {
                 self.question_set = db::get_question_set(optionset);
 
                 //Tell the user we've started and ask a question
-                self.say("Trivia Running");
+                self.say_raw("Trivia Running");
                 self.ask_question();
             },
             true => {
-                self.say("Trivia is already running");
+                self.say_raw("Trivia is already running");
             },
         };
     }
@@ -68,27 +68,22 @@ impl TriviaManager {
                 String::from("Trivia is not running")
             },
         };
-        self.say(text.as_str());
+        self.say(text);
     }
 
     pub fn skip(&mut self) {
         match self.running {
             true => {
-                self.say("Skipping question.");
+                self.say_raw("Skipping question.");
                 self.question_set.next_question();
                 self.ask_question();
             },
             false => {
-                self.say("Can't skip because trivia is not running");
+                self.say_raw("Can't skip because trivia is not running");
             },
         };
     }
     
-    /// Handler for an unrecognized trivia command
-    pub fn unrecognized_command(&self, message: &Message) {
-        let _ = message.channel_id.say("Invalid Command");
-    }
-
     /// Method which runs whenever a new message is recieved.
     ///
     /// If the triviabot is running, the text is checked to see if it is an answer
@@ -96,8 +91,8 @@ impl TriviaManager {
         if self.running {
             let correct = self.check_answer(message.content);
             if correct {
-                let _ = self.channel.unwrap().say("Correct");
-                self.scores.increase_score(message.author.id, 1);
+                self.say_raw("Correct");
+                self.scores.increase_score(message.author, 1);
 
                 self.question_set.next_question();
                 self.ask_question();
@@ -110,7 +105,7 @@ impl TriviaManager {
     }
 
     fn print_scores(&self) {
-        self.say(self.scores.output_scores().as_str());
+        self.say(self.scores.output_scores());
 
     }
 
@@ -126,12 +121,12 @@ impl TriviaManager {
                     Ok(s) => s
                 };
                 let question = format!("Question: {}", decoded);
-                self.say(&question);
+                self.say_raw(&question);
                 println!("Answer: {}", q.answer);
                 true
             },
             None => {
-                self.say("Out of questions");
+                self.say_raw("Out of questions");
                 false
             }
         };
@@ -160,14 +155,24 @@ impl TriviaManager {
     }
 
     /// Sends a message to the currently set channel
+    /// Accepts a raw Str object
     /// If no channel exists, outputs an error message to the console 
-    /// TODO: Add real error handling here
-    fn say(&self, message: &str) {
+    fn say_raw(&self, message: &str) {
         match self.channel {
-            Some(_channel) => { let _ = self.channel.unwrap().say(message); },
+            Some(channel) => { let _ = channel.say(message); },
             None => { println!("Error. Tried to use say without a channel set"); },
         }
+    }
 
+    /// Sends a message to the currently set channel
+    /// Accepts a String object
+    /// If no channel exists, outputs an error message to the console 
+    ///
+    fn say(&self, message: String) {
+        match self.channel {
+            Some(channel) => { let _ = channel.say(message.as_str()); },
+            None => { println!("Error. Tried to use say without a channel set"); },
+        }
     }
 
 }
