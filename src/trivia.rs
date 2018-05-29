@@ -4,16 +4,15 @@ use typemap::Key;
 
 use db;
 use optionset::OptionSet;
-use question::Question;
 use questionset::QuestionSet;
 use scores::Scores;
 
 /// The TriviaManager holds the current gamestate
 pub struct TriviaManager {
     pub running: bool,
-    question_set: QuestionSet,
+    question_set: Option<QuestionSet>,
     channel: Option<ChannelId>,
-    scores: Scores,
+    scores: Option<Scores>,
     skips: u32,
 }
 
@@ -25,12 +24,11 @@ impl Key for TriviaManager {
 impl TriviaManager {
     /// Generates a new trivia manager. Channel and running are unset by default.
     pub fn new() -> TriviaManager {
-        let questions: Vec<Question> = Vec::new();
         TriviaManager {
             running: false,
-            question_set: QuestionSet::new(questions, 1),
+            question_set: None,
             channel: None,
-            scores: Scores::new(),
+            scores: None, //Scores::new(),
             skips: 0,
         }
     }
@@ -44,7 +42,7 @@ impl TriviaManager {
                 //Configure the trivia manager
                 self.running = true;
 
-                self.question_set = db::get_question_set(optionset);
+                self.question_set = Some(db::get_question_set(optionset));
 
                 //Tell the user we've started and ask a question
                 self.say_raw("Trivia Running");
@@ -76,7 +74,12 @@ impl TriviaManager {
                 self.skips += 1;
                 if self.skips >= 3 {
                     self.say_raw("Skipping question.");
-                    self.question_set.next_question();
+
+                    self.question_set
+                        .as_mut()
+                        .expect("Error getting questionset")
+                        .next_question();
+
                     self.ask_question();
                 } 
                     self.say_raw(format!("Votes Needed: {}/3", self.skips).as_str());
@@ -95,9 +98,17 @@ impl TriviaManager {
             let correct = self.check_answer(message.content);
             if correct {
                 self.say_raw("Correct");
-                self.scores.increase_score(message.author, 1);
 
-                self.question_set.next_question();
+                self.scores
+                    .as_mut()
+                    .expect("Error getting scores in on_message()")
+                    .increase_score(message.author, 1);
+
+                self.question_set
+                    .as_mut()
+                    .expect("Error getting questionset in on_message()")
+                    .next_question();
+
                 self.ask_question();
             }
         }
@@ -110,14 +121,22 @@ impl TriviaManager {
 
     // Prints out the scorelist to the current channel
     fn print_scores(&self) {
-        self.say(self.scores.output_scores());
+        let scores = self.scores
+                        .as_ref()
+                        .expect("Error getting scores")
+                        .output_scores();
+        self.say(scores);
     }
 
     // Sends a message to the active trivia channel with the current question
     // When no more questions are available, this method calls the stop() method
     fn ask_question(&mut self) {
         // If question is false, there was no question to ask
-        let question = match self.question_set.get_current_question() {
+        let question = match self.question_set
+                                .as_ref()
+                                .expect("Error getting questionset in ask_question()")
+                                .get_current_question() 
+        {
             Some(q) => {
                 let prompt = format!("Question: {}", q.prompt);
                 self.say_raw(&prompt);
@@ -138,7 +157,10 @@ impl TriviaManager {
 
     // Checks if a given string matches the current question's answer
     fn check_answer(&mut self, message: String) -> bool {
-        let question = self.question_set.get_current_question();
+        let question = self.question_set
+                            .as_ref()
+                            .expect("Error getting question set")
+                            .get_current_question();
 
         match question {
             Some(q) => {
