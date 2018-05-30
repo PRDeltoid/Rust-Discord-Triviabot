@@ -24,7 +24,7 @@ struct Entry {
 }
 
 /// Produces a QuestionSet based on the given OptionSet.
-pub fn get_question_set(options: OptionSet) -> QuestionSet {
+pub fn get_question_set(options: &OptionSet) -> QuestionSet {
     // Grab the number of questions before we consume the optionset
     let number_of_questions = options.number_of_questions.clone();
 
@@ -62,15 +62,15 @@ fn get_json(url: Url) -> Result<String, reqwest::Error> {
 }
 
 // Composes a trivia request URL based on parameters.
-fn compose_url(options: OptionSet) -> Result<Url, url::ParseError> {
+fn compose_url(options: &OptionSet) -> Result<Url, url::ParseError> {
     let num = options.number_of_questions.to_string();
     let url = Url::parse_with_params(
         "https://opentdb.com/api.php",
         &[
             ("amount", num),
             ("type", "multiple".to_string()),
-            ("difficulty", options.difficulty),
-            ("category", options.category),
+            ("difficulty", options.difficulty.clone()),
+            ("category", options.category.clone()),
         ],
     )?;
 

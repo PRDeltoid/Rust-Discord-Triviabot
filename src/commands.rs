@@ -30,6 +30,7 @@ command!(trivia_start(context, message, args) {
         number_of_questions: number_of_questions,
         difficulty: difficulty,
         category: String::from(""),
+        channel: message.channel_id,
     };
 
     trivia_manager.set_channel(message);

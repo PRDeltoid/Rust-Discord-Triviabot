@@ -28,7 +28,7 @@ impl TriviaManager {
             running: false,
             question_set: None,
             channel: None,
-            scores: None, //Scores::new(),
+            scores: None,
             skips: 0,
         }
     }
@@ -41,11 +41,12 @@ impl TriviaManager {
             false => {
                 //Configure the trivia manager
                 self.running = true;
-
-                self.question_set = Some(db::get_question_set(optionset));
+                self.question_set = Some(db::get_question_set(&optionset));
+                self.channel = Some(optionset.channel);
+                self.scores = Some(Scores::new());
 
                 //Tell the user we've started and ask a question
-                self.say_raw("Trivia Running");
+                self.say_raw("Trivia Starting");
                 self.ask_question();
             }
             true => {
@@ -56,15 +57,17 @@ impl TriviaManager {
 
     /// Stops the trivia bot
     pub fn stop(&mut self) {
-        let text = match self.running {
+        match self.running {
             true => {
-                self.running = false;
                 self.print_scores();
-                String::from("Trivia Stopping")
+                self.say_raw("Trivia Stopping");
+                self.running = false;
+                self.question_set = None;
+                self.channel = None;
+                self.scores = None;
             }
-            false => String::from("Trivia is not running"),
+            false => self.say_raw("Trivia is not running"),
         };
-        self.say(text);
     }
 
     /// Skips the current question on the triviabot
@@ -82,7 +85,7 @@ impl TriviaManager {
 
                     self.ask_question();
                 } 
-                    self.say_raw(format!("Votes Needed: {}/3", self.skips).as_str());
+                self.say_raw(format!("Votes Needed: {}/3", self.skips).as_str());
             }
             false => {
                 self.say_raw("Can't skip because trivia is not running");
