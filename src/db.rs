@@ -35,6 +35,7 @@ pub fn get_question_set(options: &OptionSet) -> QuestionSet {
 
     // Create our raw dataset from the JSON
     let res: EntrySet = serde_json::from_str(&json).expect("Error converting JSON to questionset");
+    //TODO: Check response code to see if it returned an OK (0) or an error (2)
 
     // Create an empty questionset
     let mut questions: Vec<Question> = Vec::new();

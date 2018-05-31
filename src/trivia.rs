@@ -38,60 +38,53 @@ impl TriviaManager {
     ///
     /// This function sets the `channel` member, which is used for sending messages during a game
     pub fn start(&mut self, optionset: OptionSet) {
-        match self.running {
-            false => {
-                //Configure the trivia manager
-                self.running = true;
-                self.question_set = Some(db::get_question_set(&optionset));
-                self.channel = Some(optionset.channel);
-                self.scores = Some(Scores::new());
+        if !self.running {
+            //Configure the trivia manager
+            self.running = true;
+            self.question_set = Some(db::get_question_set(&optionset));
+            self.channel = Some(optionset.channel);
+            self.scores = Some(Scores::new());
 
-                //Tell the user we've started and ask a question
-                self.say("Trivia Starting");
-                self.ask_question();
-            }
-            true => {
-                self.say("Trivia is already running");
-            }
-        };
+            //Tell the user we've started and ask a question
+            self.say("Trivia Starting");
+            self.ask_question();
+        } else {
+            self.say("Trivia is already running");
+        }
     }
 
     /// Stops the trivia bot
     pub fn stop(&mut self) {
-        match self.running {
-            true => {
-                self.print_scores();
-                self.say("Trivia Stopping");
-                self.running = false;
-                self.question_set = None;
-                self.channel = None;
-                self.scores = None;
-            }
-            false => self.say("Trivia is not running"),
-        };
+        if self.running {
+            self.print_scores();
+            self.say("Trivia Stopping");
+            self.running = false;
+            self.question_set = None;
+            self.channel = None;
+            self.scores = None;
+        } else {
+            self.say("Trivia is not running");
+        }
     }
 
     /// Skips the current question on the triviabot
     pub fn skip(&mut self) {
-        match self.running {
-            true => {
-                self.skips += 1;
-                if self.skips >= 3 {
-                    self.say("Skipping question.");
+        if self.running {
+            self.skips += 1;
+            if self.skips >= 3 {
+                self.say("Skipping question.");
 
-                    self.question_set
-                        .as_mut()
-                        .expect("Error getting questionset")
-                        .next_question();
+                self.question_set
+                    .as_mut()
+                    .expect("Error getting questionset")
+                    .next_question();
 
-                    self.ask_question();
-                } 
+                self.ask_question();
                 self.say(format!("Votes Needed: {}/3", self.skips).as_str());
             }
-            false => {
-                self.say("Can't skip because trivia is not running");
-            }
-        };
+        } else {
+            self.say("Can't skip because trivia is not running");
+        }
     }
 
     /// Method which runs whenever a new message is recieved.
@@ -154,7 +147,7 @@ impl TriviaManager {
         };
 
         // Stop if we don't have any more questions to ask
-        if question == false {
+        if !question {
             self.stop();
         }
     }
@@ -168,11 +161,8 @@ impl TriviaManager {
 
         match question {
             Some(q) => {
-                if message.to_lowercase() == q.answer.to_lowercase() {
-                    true
-                } else {
-                    false
-                }
+                //Check if the message is the same as the answer
+                message.to_lowercase() == q.answer.to_lowercase()
             }
             None => false,
         }
