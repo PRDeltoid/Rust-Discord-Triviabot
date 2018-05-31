@@ -15,14 +15,8 @@ command!(trivia_start(context, message, args) {
         number_of_questions = 10;
         difficulty = String::from("medium");
     } else {
-        number_of_questions = match args.find::<u32>() {
-            Ok(s) => s,
-            Err(_e) => 10, //default number of questions
-        };
-        difficulty = match args.find::<String>() {
-            Ok(diff) => diff,
-            Err(_e) => String::from("medium"), //default question difficulty
-        };
+        number_of_questions = args.find::<u32>().unwrap_or(10);
+        difficulty = args.find::<String>().unwrap_or("medium".to_string());
         // println!("Num: {}, Diff: {}", number_of_questions, difficulty);
     }
 

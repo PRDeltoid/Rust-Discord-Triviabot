@@ -1,6 +1,7 @@
 use serenity::model::channel::Message;
 use serenity::model::id::ChannelId;
 use typemap::Key;
+use std::fmt::Display;
 
 use db;
 use optionset::OptionSet;
@@ -46,11 +47,11 @@ impl TriviaManager {
                 self.scores = Some(Scores::new());
 
                 //Tell the user we've started and ask a question
-                self.say_raw("Trivia Starting");
+                self.say("Trivia Starting");
                 self.ask_question();
             }
             true => {
-                self.say_raw("Trivia is already running");
+                self.say("Trivia is already running");
             }
         };
     }
@@ -60,13 +61,13 @@ impl TriviaManager {
         match self.running {
             true => {
                 self.print_scores();
-                self.say_raw("Trivia Stopping");
+                self.say("Trivia Stopping");
                 self.running = false;
                 self.question_set = None;
                 self.channel = None;
                 self.scores = None;
             }
-            false => self.say_raw("Trivia is not running"),
+            false => self.say("Trivia is not running"),
         };
     }
 
@@ -76,7 +77,7 @@ impl TriviaManager {
             true => {
                 self.skips += 1;
                 if self.skips >= 3 {
-                    self.say_raw("Skipping question.");
+                    self.say("Skipping question.");
 
                     self.question_set
                         .as_mut()
@@ -85,10 +86,10 @@ impl TriviaManager {
 
                     self.ask_question();
                 } 
-                self.say_raw(format!("Votes Needed: {}/3", self.skips).as_str());
+                self.say(format!("Votes Needed: {}/3", self.skips).as_str());
             }
             false => {
-                self.say_raw("Can't skip because trivia is not running");
+                self.say("Can't skip because trivia is not running");
             }
         };
     }
@@ -100,7 +101,7 @@ impl TriviaManager {
         if self.running {
             let correct = self.check_answer(message.content);
             if correct {
-                self.say_raw("Correct");
+                self.say("Correct");
 
                 self.scores
                     .as_mut()
@@ -142,12 +143,12 @@ impl TriviaManager {
         {
             Some(q) => {
                 let prompt = format!("Question: {}", q.prompt);
-                self.say_raw(&prompt);
+                self.say(&prompt);
                 println!("Answer: {}", q.answer);
                 true
             }
             None => {
-                self.say_raw("Out of questions");
+                self.say("Out of questions");
                 false
             }
         };
@@ -178,31 +179,12 @@ impl TriviaManager {
     }
 
     // Sends a message to the currently set channel
-    // Accepts a raw Str object
-    // If no channel exists, outputs an error message to the console
-    fn say_raw(&self, message: &str) {
-        match self.channel {
-            Some(channel) => {
-                let _ = channel.say(message);
-            }
-            None => {
-                println!("Error. Tried to use say without a channel set");
-            }
-        }
-    }
-
-    // Sends a message to the currently set channel
     // Accepts a String object
     // If no channel exists, outputs an error message to the console
     //
-    fn say(&self, message: String) {
-        match self.channel {
-            Some(channel) => {
-                let _ = channel.say(message.as_str());
-            }
-            None => {
-                println!("Error. Tried to use say without a channel set");
-            }
-        }
+    fn say<T: Display>(&self, message: T) {
+        let _ = self.channel
+            .expect("Tried using say without a channel set")
+            .say(format!("{}", message));
     }
 }
