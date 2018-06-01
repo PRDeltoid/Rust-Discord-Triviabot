@@ -26,7 +26,7 @@ struct Entry {
 /// Produces a QuestionSet based on the given OptionSet.
 pub fn get_question_set(options: &OptionSet) -> QuestionSet {
     // Grab the number of questions before we consume the optionset
-    let number_of_questions = options.number_of_questions.clone();
+    let number_of_questions = options.number_of_questions;
 
     // Pull our trivia data as JSON
     let url = compose_url(options).expect("Error creating db URL");
@@ -41,7 +41,7 @@ pub fn get_question_set(options: &OptionSet) -> QuestionSet {
     let mut questions: Vec<Question> = Vec::new();
 
     // For each result in our raw dataset, create a question and add it to 'questions'
-    for result in res.results.iter() {
+    for result in &res.results {
         let question = Question {
             prompt: decode_html(&result.question).expect("Error decoding a question prompt"),
             answer: decode_html(&result.correct_answer).expect("Error decoding a question answer"),

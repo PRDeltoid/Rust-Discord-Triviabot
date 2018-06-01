@@ -12,10 +12,10 @@ impl Question {
     #[allow(dead_code)]
     pub fn new(prompt: String, answer: String, category: String, difficulty: String) -> Question {
         Question {
-            prompt: prompt,
-            answer: answer,
-            category: category,
-            difficulty: difficulty,
+            prompt,
+            answer,
+            category,
+            difficulty,
             answered: false,
         }
     }
@@ -23,7 +23,7 @@ impl Question {
 
 impl Display for Question {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        write!(
+        writeln!(
             f,
             "\tCat: {},\n\tDifficulty: {},\n\tQuestion: {},\n\tAnswer: {}\n",
             self.category, self.difficulty, self.prompt, self.answer

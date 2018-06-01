@@ -37,7 +37,7 @@ impl TriviaManager {
     /// Starts the trivia bot
     ///
     /// This function sets the `channel` member, which is used for sending messages during a game
-    pub fn start(&mut self, optionset: OptionSet) {
+    pub fn start(&mut self, optionset: &OptionSet) {
         if !self.running {
             //Configure the trivia manager
             self.running = true;
@@ -92,7 +92,7 @@ impl TriviaManager {
     /// If the triviabot is running, the text is checked to see if it is an answer
     pub fn on_message(&mut self, message: Message) {
         if self.running {
-            let correct = self.check_answer(message.content);
+            let correct = self.check_answer(message.content.as_str());
             if correct {
                 self.say("Correct");
 
@@ -153,7 +153,7 @@ impl TriviaManager {
     }
 
     // Checks if a given string matches the current question's answer
-    fn check_answer(&mut self, message: String) -> bool {
+    fn check_answer(&mut self, message: &str) -> bool {
         let question = self.question_set
                             .as_ref()
                             .expect("Error getting question set")

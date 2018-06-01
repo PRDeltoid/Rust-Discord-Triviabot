@@ -26,7 +26,7 @@ impl Scores {
     /// User is of type serenity::model::user::User
     pub fn get_score(&self, user: &User) -> u32 {
         match self.score_list.get(&user.id) {
-            Some(s) => s.1.clone(),
+            Some(s) => s.1,
             None => 0,
         }
     }
@@ -34,7 +34,7 @@ impl Scores {
     /// Output all the scores as a String
     pub fn output_scores(&self) -> String {
         let mut output = String::from("Scores:\n");
-        for (userid, score) in self.score_list.iter() {
+        for (userid, score) in &self.score_list {
             let s = format!("{} - {} - {}\n", userid, score.0, score.1);
             output.push_str(&s);
         }

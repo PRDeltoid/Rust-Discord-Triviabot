@@ -11,7 +11,7 @@ impl QuestionSet {
     /// Generates a new QuestionSet item 
     pub fn new(questions: Vec<Question>, number_of_questions: u32) -> QuestionSet {
         QuestionSet {
-            questions: questions,
+            questions,
             _number_of_questions: number_of_questions,
             current_question_number: 0,
         }
@@ -30,11 +30,11 @@ impl QuestionSet {
 
 impl Display for QuestionSet {
     fn fmt(&self, _f: &mut Formatter) -> Result {
-        print!("\n[\n");
-        for question in self.questions.iter() {
-            print!("{}, ", question);
+        println!("\n[");
+        for question in &self.questions {
+            println!("{}, ", question);
         }
-        print!("\n]");
+        println!("\n]");
 
         Ok(())
     }
