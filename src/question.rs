@@ -40,8 +40,6 @@ impl Question {
             _ => String::from("A"),
         };
         
-        println!("Index: {}", index);
-
         //Return a String of a formatted list of potential answers
         self.answer_prompt = format!("\nA. {}\nB. {}\nC. {}\nD. {}\n",
                 answers[0],

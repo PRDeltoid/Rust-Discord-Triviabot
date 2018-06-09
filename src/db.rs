@@ -46,7 +46,13 @@ pub fn get_question_set(options: &OptionSet) -> QuestionSet {
             prompt: decode_html(&result.question).expect("Error decoding a question prompt"),
             answer: decode_html(&result.correct_answer).expect("Error decoding a question answer"),
             answer_letter: String::from("A"),
-            incorrect_answers: result.incorrect_answers.clone(),
+            incorrect_answers: {
+                let mut answers = result.incorrect_answers.clone();
+                for answer in answers.iter_mut() {
+                    *answer = decode_html(answer).expect("Error decoding an incorrect answer");
+                }
+                answers
+            },
             answer_prompt: String::from(""),
             category: result.category.clone(),
             difficulty: result.difficulty.clone(),
