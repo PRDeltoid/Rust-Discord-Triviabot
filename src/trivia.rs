@@ -34,7 +34,7 @@ impl TriviaManager {
             channel: None,
             scores: None,
             skips: 0,
-            user_answered_list: HashMap::new(), //<User::id>,
+            user_answered_list: HashMap::new(),
         }
     }
 
@@ -128,7 +128,25 @@ impl TriviaManager {
         }
     }
 
-    pub fn has_answered(&mut self, user: &User) -> bool {
+    /// Sets the channel where the triviabot will send it's messages
+    pub fn set_channel(&mut self, message: &Message) {
+        self.channel = Some(message.channel_id);
+    }
+
+    // Prints out the scorelist to the current channel
+    fn print_scores(&self) {
+        let scores = self.scores
+                        .as_ref()
+                        .expect("Error getting scores")
+                        .output_scores();
+        self.say(scores);
+    }
+
+    // Checks AND sets if a user has answered the question
+    // Returns true if the user has already answered, and false if they haven't.
+    // After this function is run, the passed user will not be able to answer a question again
+    // until the answered list is cleared
+    fn has_answered(&mut self, user: &User) -> bool {
         //Mark that the given user has attempted to answer the question
         let answered = self.user_answered_list.insert(user.id, true);
 
@@ -142,20 +160,6 @@ impl TriviaManager {
 
         //After the execution of this function, the user will be marked as having attempted to
         //answer the question
-    }
-
-    /// Sets the channel where the triviabot will send it's messages
-    pub fn set_channel(&mut self, message: &Message) {
-        self.channel = Some(message.channel_id);
-    }
-
-    // Prints out the scorelist to the current channel
-    fn print_scores(&self) {
-        let scores = self.scores
-                        .as_ref()
-                        .expect("Error getting scores")
-                        .output_scores();
-        self.say(scores);
     }
 
     // Sends a message to the active trivia channel with the current question

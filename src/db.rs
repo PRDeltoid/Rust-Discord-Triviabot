@@ -46,25 +46,29 @@ pub fn get_question_set(options: &OptionSet) -> QuestionSet {
             prompt: decode_html(&result.question).expect("Error decoding a question prompt"),
             answer: decode_html(&result.correct_answer).expect("Error decoding a question answer"),
             answer_letter: String::from("A"),
-            incorrect_answers: {
-                let mut answers = result.incorrect_answers.clone();
-                for answer in answers.iter_mut() {
-                    *answer = decode_html(answer).expect("Error decoding an incorrect answer");
-                }
-                answers
-            },
+            incorrect_answers: decode_html_vector(result.incorrect_answers.clone()),
             answer_prompt: String::from(""),
             category: result.category.clone(),
             difficulty: result.difficulty.clone(),
             answered: false,
         };
-        //Randomize the answer set and set our answer letter to the corrisponding answer
+        // Randomize the answer set and set our answer letter to the corrisponding answer
         question.set_answer_prompt();
+        // Add the completed question object to the questions list
         questions.push(question);
     }
 
     // Return the new questionset
     QuestionSet::new(questions, number_of_questions)
+}
+
+// HTML Decode a vector of strings in-place
+fn decode_html_vector(mut answers: Vec<String>) -> Vec<String> {
+    for answer in &mut answers {
+        *answer = decode_html(answer).expect("Error decoding an incorrect answer");
+    }
+
+    answers
 }
 
 // Requests JSON from the given URL and returns it as a String
