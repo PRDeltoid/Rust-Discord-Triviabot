@@ -6,7 +6,6 @@ use optionset::OptionSet;
 use question::Question;
 use questionset::QuestionSet;
 use url::Url;
-use htmlescape::decode_html;
 
 #[derive(Serialize, Deserialize)]
 struct EntrySet {
@@ -42,33 +41,14 @@ pub fn get_question_set(options: &OptionSet) -> QuestionSet {
 
     // For each result in our raw dataset, create a question and add it to 'questions'
     for result in &res.results {
-        let mut question = Question {
-            prompt: decode_html(&result.question).expect("Error decoding a question prompt"),
-            answer: decode_html(&result.correct_answer).expect("Error decoding a question answer"),
-            answer_letter: String::from("A"),
-            incorrect_answers: decode_html_vector(result.incorrect_answers.clone()),
-            answer_prompt: String::from(""),
-            category: result.category.clone(),
-            difficulty: result.difficulty.clone(),
-            answered: false,
-        };
-        // Randomize the answer set and set our answer letter to the corrisponding answer
-        question.set_answer_prompt();
+        //Create out question
+        let question = Question::new(result.question.clone(), result.correct_answer.clone(), result.incorrect_answers.clone(), result.category.clone(), result.difficulty.clone(), false);
         // Add the completed question object to the questions list
         questions.push(question);
     }
 
     // Return the new questionset
     QuestionSet::new(questions, number_of_questions)
-}
-
-// HTML Decode a vector of strings in-place
-fn decode_html_vector(mut answers: Vec<String>) -> Vec<String> {
-    for answer in &mut answers {
-        *answer = decode_html(answer).expect("Error decoding an incorrect answer");
-    }
-
-    answers
 }
 
 // Requests JSON from the given URL and returns it as a String
