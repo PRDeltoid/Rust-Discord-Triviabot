@@ -137,6 +137,7 @@ impl TriviaManager {
             Some(q) => {
                 let prompt = format!("Question: {}", q.prompt);
                 self.say(&prompt);
+                self.say(&q.answer_prompt);
                 println!("Answer: {}", q.answer);
                 true
             }
@@ -162,7 +163,7 @@ impl TriviaManager {
         match question {
             Some(q) => {
                 //Check if the message is the same as the answer
-                message.to_lowercase() == q.answer.to_lowercase()
+                message.to_lowercase() == q.answer_letter.to_lowercase() //answer.to_lowercase()
             }
             None => false,
         }

@@ -7,6 +7,7 @@ extern crate typemap;
 extern crate serde_derive;
 extern crate htmlescape;
 extern crate url;
+extern crate rand;
 
 //Imports
 use serenity::client::{Client, Context};

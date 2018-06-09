@@ -42,13 +42,18 @@ pub fn get_question_set(options: &OptionSet) -> QuestionSet {
 
     // For each result in our raw dataset, create a question and add it to 'questions'
     for result in &res.results {
-        let question = Question {
+        let mut question = Question {
             prompt: decode_html(&result.question).expect("Error decoding a question prompt"),
             answer: decode_html(&result.correct_answer).expect("Error decoding a question answer"),
+            answer_letter: String::from("A"),
+            incorrect_answers: result.incorrect_answers.clone(),
+            answer_prompt: String::from(""),
             category: result.category.clone(),
             difficulty: result.difficulty.clone(),
             answered: false,
         };
+        //Randomize the answer set and set our answer letter to the corrisponding answer
+        question.set_answer_prompt();
         questions.push(question);
     }
 
