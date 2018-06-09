@@ -6,7 +6,6 @@ use optionset::OptionSet;
 use question::Question;
 use questionset::QuestionSet;
 use url::Url;
-use htmlescape::decode_html;
 
 #[derive(Serialize, Deserialize)]
 struct EntrySet {
@@ -42,13 +41,14 @@ pub fn get_question_set(options: &OptionSet) -> QuestionSet {
 
     // For each result in our raw dataset, create a question and add it to 'questions'
     for result in &res.results {
-        let question = Question {
-            prompt: decode_html(&result.question).expect("Error decoding a question prompt"),
-            answer: decode_html(&result.correct_answer).expect("Error decoding a question answer"),
-            category: result.category.clone(),
-            difficulty: result.difficulty.clone(),
-            answered: false,
-        };
+        // Create the question
+        let question = Question::new(result.question.clone(), 
+                                     result.correct_answer.clone(), 
+                                     result.incorrect_answers.clone(), 
+                                     result.category.clone(), 
+                                     result.difficulty.clone(), 
+                                     false);
+        // Add the completed question object to the questions list
         questions.push(question);
     }
 

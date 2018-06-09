@@ -1,6 +1,8 @@
 use serenity::model::channel::Message;
-use serenity::model::id::ChannelId;
+use serenity::model::id::{ ChannelId, UserId };
+use serenity::model::user::User;
 use typemap::Key;
+use std::collections::HashMap;
 use std::fmt::Display;
 
 use db;
@@ -15,6 +17,7 @@ pub struct TriviaManager {
     channel: Option<ChannelId>,
     scores: Option<Scores>,
     skips: u32,
+    user_answered_list: HashMap<UserId, bool>,
 }
 
 impl Key for TriviaManager {
@@ -31,6 +34,7 @@ impl TriviaManager {
             channel: None,
             scores: None,
             skips: 0,
+            user_answered_list: HashMap::new(),
         }
     }
 
@@ -92,21 +96,34 @@ impl TriviaManager {
     /// If the triviabot is running, the text is checked to see if it is an answer
     pub fn on_message(&mut self, message: Message) {
         if self.running {
+            //Check if the answer is correct
             let correct = self.check_answer(message.content.as_str());
-            if correct {
-                self.say("Correct");
+            //Check if this is the users first guess
+            let has_answered = self.has_answered(&message.author);
+            //If the answer is correct AND it is the user's first guess, they got the question
+            //right
+            if correct && !has_answered {
+                //Congradulate the user
+                self.say(
+                    format!("{} got the correct answer", &message.author.name));
 
+                //Increase the user's score by 1
                 self.scores
                     .as_mut()
                     .expect("Error getting scores in on_message()")
                     .increase_score(message.author, 1);
 
+                //Go to the next question
                 self.question_set
                     .as_mut()
                     .expect("Error getting questionset in on_message()")
                     .next_question();
 
+                //Start the guessing all over again
                 self.ask_question();
+
+                //Clear our user answered list so everyone can answer again
+                self.user_answered_list.clear();
             }
         }
     }
@@ -125,6 +142,26 @@ impl TriviaManager {
         self.say(scores);
     }
 
+    // Checks AND sets if a user has answered the question
+    // Returns true if the user has already answered, and false if they haven't.
+    // After this function is run, the passed user will not be able to answer a question again
+    // until the answered list is cleared
+    fn has_answered(&mut self, user: &User) -> bool {
+        //Mark that the given user has attempted to answer the question
+        let answered = self.user_answered_list.insert(user.id, true);
+
+        //If answered is a Some value, the user already answered. Return true.
+        //If the value is None, this is the users first answer. Return false, the user HASN'T
+        //answered yet
+        match answered {
+            Some(_) => true,
+            None => false,
+        }
+
+        //After the execution of this function, the user will be marked as having attempted to
+        //answer the question
+    }
+
     // Sends a message to the active trivia channel with the current question
     // When no more questions are available, this method calls the stop() method
     fn ask_question(&mut self) {
@@ -135,8 +172,7 @@ impl TriviaManager {
                                 .get_current_question() 
         {
             Some(q) => {
-                let prompt = format!("Question: {}", q.prompt);
-                self.say(&prompt);
+                self.say(format!("```Question: {}\n{}```", &q.prompt, &q.answer_prompt));
                 println!("Answer: {}", q.answer);
                 true
             }
@@ -162,7 +198,7 @@ impl TriviaManager {
         match question {
             Some(q) => {
                 //Check if the message is the same as the answer
-                message.to_lowercase() == q.answer.to_lowercase()
+                message.to_lowercase() == q.answer_letter.to_lowercase() //answer.to_lowercase()
             }
             None => false,
         }
