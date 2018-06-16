@@ -18,6 +18,7 @@ pub struct TriviaManager {
     scores: Option<Scores>,
     skips: u32,
     user_answered_list: HashMap<UserId, bool>,
+    user_skipped_list: HashMap<UserId, bool>,
 }
 
 impl Key for TriviaManager {
@@ -35,6 +36,7 @@ impl TriviaManager {
             scores: None,
             skips: 0,
             user_answered_list: HashMap::new(),
+            user_skipped_list: HashMap::new(),
         }
     }
 
@@ -72,19 +74,21 @@ impl TriviaManager {
     }
 
     /// Skips the current question on the triviabot
-    pub fn skip(&mut self) {
+    pub fn vote_skip(&mut self, message: &Message) {
         if self.running {
+            // Check if the user has already skipped
+            // If so, exit early and say nothing
+            if self.has_skipped(&message.author) {
+                return;
+            }
             self.skips += 1;
             if self.skips >= 3 {
                 self.say("Skipping question.");
 
-                self.question_set
-                    .as_mut()
-                    .expect("Error getting questionset")
-                    .next_question();
-
+                self.next_question();
                 self.ask_question();
-                self.say(format!("Votes Needed: {}/3", self.skips).as_str());
+            } else {
+                self.say(format!("{} voted to skip. **Votes Needed: {}/3**", message.author.name, self.skips).as_str());
             }
         } else {
             self.say("Can't skip because trivia is not running");
@@ -95,7 +99,8 @@ impl TriviaManager {
     ///
     /// If the triviabot is running, the text is checked to see if it is an answer
     pub fn on_message(&mut self, message: Message) {
-        if self.running {
+        if self.running && TriviaManager::valid_letter(&message) {
+
             //Check if the answer is correct
             let correct = self.check_answer(message.content.as_str());
             //Check if this is the users first guess
@@ -113,19 +118,20 @@ impl TriviaManager {
                     .expect("Error getting scores in on_message()")
                     .increase_score(message.author, 1);
 
-                //Go to the next question
-                self.question_set
-                    .as_mut()
-                    .expect("Error getting questionset in on_message()")
-                    .next_question();
-
-                //Start the guessing all over again
+                self.next_question();
                 self.ask_question();
-
-                //Clear our user answered list so everyone can answer again
-                self.user_answered_list.clear();
             }
         }
+    }
+
+    fn next_question(&mut self) {
+        self.question_set
+            .as_mut()
+            .expect("Error getting questionset")
+            .next_question();
+        
+        self.user_answered_list.clear();
+        self.user_skipped_list.clear();
     }
 
     /// Sets the channel where the triviabot will send it's messages
@@ -133,6 +139,17 @@ impl TriviaManager {
         self.channel = Some(message.channel_id);
     }
 
+    fn valid_letter(message: &Message) -> bool {
+        let message = message.content.to_lowercase();
+        if message == "a" ||
+            message == "b" ||
+            message == "c" ||
+            message == "d" {
+                true
+            } else {
+                false
+            }
+    }
     // Prints out the scorelist to the current channel
     fn print_scores(&self) {
         let scores = self.scores
@@ -160,6 +177,20 @@ impl TriviaManager {
 
         //After the execution of this function, the user will be marked as having attempted to
         //answer the question
+    }
+
+    //Checks AND sets if a user has skipped the current question
+    // Returns true if the user has already voted to skip, and false if they haven't.
+    // After this functionis run, the passed user will not be able to skip the current question
+    // again until the user_skipped_list has been cleared
+    fn has_skipped(&mut self, user: &User) -> bool {
+        let skipped = self.user_skipped_list.insert(user.id, true);
+
+        match skipped {
+            Some(_) => true,
+            None    => false,
+        }
+
     }
 
     // Sends a message to the active trivia channel with the current question

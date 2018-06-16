@@ -41,9 +41,9 @@ command!(trivia_stop(context, message, _args) {
 });
 
 // This command is run when the skip command is executed
-command!(trivia_skip(context, _message, _args) {
+command!(trivia_skip(context, message, _args) {
     let mut data = context.data.lock();
     let trivia_manager = data.get_mut::<trivia::TriviaManager>().expect("Error getting TriviaManager from bot data");
 
-    trivia_manager.skip();
+    trivia_manager.vote_skip(message);
 });
