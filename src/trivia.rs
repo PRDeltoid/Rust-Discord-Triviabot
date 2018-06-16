@@ -229,7 +229,7 @@ impl TriviaManager {
         match question {
             Some(q) => {
                 //Check if the message is the same as the answer
-                message.to_lowercase() == q.answer_letter.to_lowercase() //answer.to_lowercase()
+                message.to_lowercase() == q.answer_letter.to_lowercase()
             }
             None => false,
         }

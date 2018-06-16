@@ -4,7 +4,7 @@ use trivia;
 // This command is run when the start command is executed
 command!(trivia_start(context, message, args) {
     let optionset;
-    let number_of_questions;
+    let mut number_of_questions;
     let difficulty;
 
     let mut data = context.data.lock();
@@ -15,9 +15,10 @@ command!(trivia_start(context, message, args) {
         number_of_questions = 10;
         difficulty = String::from("medium");
     } else {
+        //println!("{:?}", args);
         number_of_questions = args.find::<u32>().unwrap_or(10);
         difficulty = args.find::<String>().unwrap_or_else(|_| "medium".to_string());
-        // println!("Num: {}, Diff: {}", number_of_questions, difficulty);
+        //println!("Num: {}, Diff: {}", number_of_questions, difficulty);
     }
 
     optionset = OptionSet {
